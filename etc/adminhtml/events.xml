@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * @author Magenest Team
+ * @copyright Copyright (c) 2018 Magenest (https://www.magenest.com)
+ * @package Magenest_Core
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="controller_action_predispatch">
+        <observer name="magenest_core_checkup"
+                  instance="Magenest\Core\Observer\PreDispatch" />
+    </event>
+</config>
