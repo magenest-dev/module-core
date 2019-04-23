@@ -4,8 +4,6 @@
  * @copyright Copyright (c) 2018 Magenest (https://www.magenest.com)
  * @package Magenest_Core
  */
-
-
 namespace Magenest\Core\Observer;
 
 use Magenest\Core\Helper\Data;
@@ -18,14 +16,26 @@ class PreDispatch implements ObserverInterface
      */
     private $backendSession;
 
+    /**
+     * @var Data
+     */
     private $helper;
 
+    /**
+     * @var \Magento\Store\Model\StoreManagerInterface
+     */
     protected $_storeManager;
 
+    /**
+     * PreDispatch constructor.
+     * @param \Magento\Backend\Model\Auth\Session $backendAuthSession
+     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
+     * @param Data $helper
+     */
     public function __construct(
         \Magento\Backend\Model\Auth\Session $backendAuthSession,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Magenest\Core\Helper\Data $helper
+        Data $helper
     ) {
         $this->backendSession = $backendAuthSession;
         $this->helper = $helper;
@@ -34,6 +44,7 @@ class PreDispatch implements ObserverInterface
 
     /**
      * @param \Magento\Framework\Event\Observer $observer
+     * @return bool|void
      */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
@@ -44,8 +55,12 @@ class PreDispatch implements ObserverInterface
                     $modules = $this->helper->getModules();
                     $curlClient->setOption(CURLOPT_REFERER, $this->_storeManager->getStore()->getBaseUrl());
                     $curlClient->post(Data::getUpdateUrl(),$modules);
-                }catch (\Exception $e){
-                    return false;
+                } catch (\Exception $e){
+                }
+
+                try {
+                    $this->helper->checkNotificationUpdate();
+                } catch (\Exception $e) {
                 }
             }
         }
