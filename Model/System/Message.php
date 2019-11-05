@@ -15,13 +15,21 @@ class Message implements \Magento\Framework\Notification\MessageInterface
     protected $inboxFactory;
     protected $notifications;
     protected $url;
+    /**
+     * Escaper
+     *
+     * @var \Magento\Framework\Escaper
+     */
+    protected $_escaper;
 
     public function __construct(
         \Magento\AdminNotification\Model\ResourceModel\Inbox\CollectionFactory $inboxFactory,
-        UrlInterface $url
+        UrlInterface $url,
+        \Magento\Framework\Escaper $escaper
     ) {
         $this->inboxFactory = $inboxFactory;
         $this->url = $url;
+        $this->_escaper = $escaper;
     }
 
     public function getIdentity()
@@ -38,9 +46,20 @@ class Message implements \Magento\Framework\Notification\MessageInterface
     {
         $html = null;
         foreach ($this->getCollection() as $notification) {
+            $readDetailsHtml = $notification->getUrl() ? ' <a style=\'font-size: 9pt;\' class="action-details" target="_blank" href="' .
+                $this->escapeUrl($notification->getUrl())
+                . '">' .
+                __('Read Details') . '</a>' : '';
+
+            $markAsReadHtml = !$notification->getIsRead() ? ' <a style=\'font-size: 9pt;\' class="action-mark" href="' . $this->getUrl(
+                    'adminhtml/notification/markAsRead/',
+                    ['id' => $notification->getId()]
+                ) . '">' . __(
+                    'Mark as Read'
+                ) . '</a>' : '';
             $html .= "<div style='padding-bottom:5px; color:gray;'>" . $notification->getTitle() .
-                " <a style='font-size: 9pt;' href='{$notification->getUrl()}'>(Read Details)</a>" .
-                " <a style='font-size: 9pt;' href='{$this->url->getUrl('admin/notification/markAsRead',[ 'id' => $notification->getId()])}'>(Mark as Read)</a>".
+                $readDetailsHtml.
+                $markAsReadHtml.
                 "</div>";
         }
         if (!empty($html)) {
@@ -52,6 +71,16 @@ class Message implements \Magento\Framework\Notification\MessageInterface
     public function getSeverity()
     {
         return self::SEVERITY_NOTICE;
+    }
+
+    public function getUrl($route = '', $params = [])
+    {
+        return $this->url->getUrl($route, $params);
+    }
+
+    public function escapeUrl($string)
+    {
+        return $this->_escaper->escapeUrl((string)$string);
     }
 
     /**
