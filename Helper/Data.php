@@ -16,15 +16,16 @@ use Magento\Framework\App\CacheInterface;
 
 class Data extends AbstractHelper
 {
-    const BASE_URL  = 'https://store.magenest.com/';
-    const BASE_CHECKUPDATE_PATH = 'magenestcore/checkupdate';
-    const BASE_CHECKNOTIFICATION_PATH = 'magenestcore/notification/get/module/';
-    const CACHE_MODULE_IDENTIFIER = 'magenest_modules';
-    const CACHE_TIME_IDENTIFIER = 'magenest_time';
-    const SEC_DIFF = 86400;
-    const CACHE_MODULE_NOTIFICATIONS_LASTCHECK = 'module_notifications_lastcheck';
+    const BASE_URL                                       = 'https://store.magenest.com/';
+    const BASE_CHECKUPDATE_PATH                          = 'magenestcore/checkupdate';
+    const BASE_CHECKNOTIFICATION_PATH                    = 'magenestcore/notification/get/module/';
+    const BASE_FEEDBACK_PATH                             = 'magenestcore/feedback/module';
+    const CACHE_MODULE_IDENTIFIER                        = 'magenest_modules';
+    const CACHE_TIME_IDENTIFIER                          = 'magenest_time';
+    const SEC_DIFF                                       = 86400;
+    const CACHE_MODULE_NOTIFICATIONS_LASTCHECK           = 'module_notifications_lastcheck';
     const XML_PATH_MAGENEST_CORE_NOTIFICATIONS_FREQUENCY = 'magenest_core/notifications/frequency';
-    const CACHE_TAG = 'MAGENEST_TAGS';
+    const CACHE_TAG                                      = 'MAGENEST_TAGS';
 
     /**
      * @var \Magento\Framework\HTTP\Client\Curl
@@ -58,6 +59,7 @@ class Data extends AbstractHelper
 
     /**
      * Data constructor.
+     *
      * @param \Magento\Framework\App\Helper\Context $context
      * @param CacheInterface $cache
      * @param \Magento\Framework\HTTP\Client\Curl $curl
@@ -76,37 +78,37 @@ class Data extends AbstractHelper
         ResourceConnection $resource
     ) {
         parent::__construct($context);
-        $this->cache = $cache;
-        $this->curlClient = $curl;
-        $this->moduleList = $moduleList;
+        $this->cache        = $cache;
+        $this->curlClient   = $curl;
+        $this->moduleList   = $moduleList;
         $this->storeManager = $storeManager;
-        $this->curlFactory = $curlFactory;
-        $this->resource = $resource;
+        $this->curlFactory  = $curlFactory;
+        $this->resource     = $resource;
     }
 
     /**
      * Check update
-     *
      * @return bool
      */
     public function checkUpdate()
     {
         $lastSt = $this->cache->load(self::CACHE_TIME_IDENTIFIER);
-        if(!$lastSt){
+        if (!$lastSt) {
             $this->cache->save(time(), self::CACHE_TIME_IDENTIFIER, [self::CACHE_TAG]);
+
             return true;
         }
-        if ((time() - intval($lastSt)) > self::SEC_DIFF){
+        if ((time() - intval($lastSt)) > self::SEC_DIFF) {
             $this->cache->save(time(), self::CACHE_TIME_IDENTIFIER, [self::CACHE_TAG]);
+
             return true;
-        }else{
+        } else {
             return false;
         }
     }
 
     /**
      * Get modules
-     *
      * @return mixed
      */
     public function getModules()
@@ -122,7 +124,6 @@ class Data extends AbstractHelper
 
     /**
      * Get curl client
-     *
      * @return \Magento\Framework\HTTP\Client\Curl
      */
     public function getCurlClient()
@@ -131,44 +132,53 @@ class Data extends AbstractHelper
             $this->curlClient = new \Magento\Framework\HTTP\Client\Curl();
         }
         $this->curlClient->setTimeout(2);
+
         return $this->curlClient;
     }
 
     /**
      * Get update url
-     *
      * @return string
      */
-    public static function getUpdateUrl(){
+    public static function getUpdateUrl()
+    {
         return self::BASE_URL . self::BASE_CHECKUPDATE_PATH;
     }
 
     /**
      * Get module notification update url
-     *
      * @return string
      */
-    public static function getUpdateNotificationUrl(){
+    public static function getUpdateNotificationUrl()
+    {
         return self::BASE_URL . self::BASE_CHECKNOTIFICATION_PATH;
     }
 
     /**
+     * Get module feedback Url
+     * @return string
+     */
+    public static function getModuleFeedbackUrl()
+    {
+        return self::BASE_URL . self::BASE_FEEDBACK_PATH;
+    }
+
+    /**
      * Refresh module data
-     *
      * @return false|string
      */
     private function refreshModuleData()
     {
         $moduleInfo = $this->getModulesInfo();
-        if($moduleInfo){
+        if ($moduleInfo) {
             $this->cache->save(json_encode($moduleInfo), self::CACHE_MODULE_IDENTIFIER, [self::CACHE_TAG]);
         }
+
         return json_encode($moduleInfo);
     }
 
     /**
      * Get module info
-     *
      * @return array
      */
     private function getModulesInfo()
@@ -184,8 +194,8 @@ class Data extends AbstractHelper
                 continue;
             }
 
-            $modulePart = explode("_", $moduleName);
-            $mName = @$modulePart[1];
+            $modulePart   = explode("_", $moduleName);
+            $mName        = @$modulePart[1];
             $modulesOut[] = $mName;
         }
 
@@ -197,17 +207,38 @@ class Data extends AbstractHelper
     }
 
     /**
+     * @return array
+     */
+    public function getModulesWithVersion()
+    {
+        $modules   = [];
+        $modules[] = [
+            'label' => 'Select a Module...',
+            'value' => 0
+        ];
+        foreach ($this->moduleList->getAll() as $key => $value) {
+            if (strstr($key, 'Magenest_') && $key != 'Magenest_Core') {
+                $modules[] = [
+                    'label' => substr($key, 9) . ' v' . $value['setup_version'],
+                    'value' => substr($key, 9) . ',' . $value['setup_version']
+                ];
+            }
+        }
+
+        return $modules;
+    }
+
+    /**
      * Check notification update
-     *
      * @return $this
      */
     public function checkNotificationUpdate()
     {
         $modules = $this->getModules();
-        $param = implode('-', $modules);
+        $param   = implode('-', $modules);
 
         $curl = $this->curlFactory->create();
-        $curl->setConfig(['timeout'=> 2]);
+        $curl->setConfig(['timeout' => 2]);
         $curl->write(\Zend_Http_Client::GET, Data::getUpdateNotificationUrl() . $param);
         $data = $curl->read();
 
@@ -226,21 +257,24 @@ class Data extends AbstractHelper
             }
         }
         $curl->close();
+
         return $this;
     }
 
     /**
      * @param null $severity
+     *
      * @return array|mixed|null
      */
     public function getSeverities($severity = 3)
     {
         $severities = [
             MessageInterface::SEVERITY_CRITICAL => __('critical'),
-            MessageInterface::SEVERITY_MAJOR => __('major'),
-            MessageInterface::SEVERITY_MINOR => __('minor'),
-            MessageInterface::SEVERITY_NOTICE => __('notice'),
+            MessageInterface::SEVERITY_MAJOR    => __('major'),
+            MessageInterface::SEVERITY_MINOR    => __('minor'),
+            MessageInterface::SEVERITY_NOTICE   => __('notice'),
         ];
+
         return @$severities[$severity];
     }
 
@@ -252,7 +286,7 @@ class Data extends AbstractHelper
     public function parse($data)
     {
         $connection = $this->resource->getConnection(ResourceConnection::DEFAULT_CONNECTION);
-        $table = $this->resource->getTableName('adminnotification_inbox');
+        $table      = $this->resource->getTableName('adminnotification_inbox');
 
         foreach ($data as $item) {
             $select = $connection->select()->from($table)->where('magenest_id = ?', $item['magenest_id']);
@@ -273,6 +307,7 @@ class Data extends AbstractHelper
      * @param $title
      * @param $description
      * @param string $url
+     *
      * @return $this
      */
     public function addNotification($id, $severity, $date, $title, $description, $url = '')
@@ -287,15 +322,16 @@ class Data extends AbstractHelper
             [
                 [
                     'magenest_id' => $id,
-                    'severity' => $severity,
-                    'date_added' => $date,
-                    'title' => $title,
+                    'severity'    => $severity,
+                    'date_added'  => $date,
+                    'title'       => $title,
                     'description' => $description,
-                    'url' => $url,
+                    'url'         => $url,
                     'is_magenest' => 1
                 ],
             ]
         );
+
         return $this;
     }
 

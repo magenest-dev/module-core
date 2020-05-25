@@ -1,0 +1,88 @@
+<?php
+/**
+ * Copyright © 2020 Magenest. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+/** @var $block \Magenest\Core\Block\Adminhtml\System\Config\Form\Button\SendFeedback */
+?>
+<div class="action action-send-feedback">
+    <button style="margin:5px;" class="action-validate-get-auth-token" type="button"
+            data-ui-id="button-send-module-feedback"
+            id="<?= $block->getHtmlId() ?>">
+        <span><?= $block->escapeHtml($block->getButtonLabel()) ?></span>
+    </button>
+</div>
+<script>
+    require([
+        'jquery',
+        'Magento_Ui/js/modal/alert',
+    ], function (jQuery, alert) {
+        jQuery('[data-ui-id="button-send-module-feedback"]').click(function () {
+            var feedbackName = jQuery('[data-ui-id="text-groups-form-fields-name-value"]').val();
+            var feedbackEmail = jQuery('[data-ui-id="text-groups-form-fields-email-value"]').val();
+            var feedbackModule = jQuery('[data-ui-id="select-groups-form-fields-module-value"]').val();
+            var feedbackContent = jQuery('[data-ui-id="textarea-groups-form-fields-content-value"]').val();
+            var baseUrl = '<?= $block->getBaseUrl(); ?>';
+
+            if (!feedbackName || !feedbackEmail || !feedbackModule || !feedbackContent) {
+                alert({
+                    title: 'Please fill in all information!'
+                });
+            } else if (feedbackEmail.indexOf("@") === -1) {
+                alert({
+                    title: 'Please use a valid email address!'
+                });
+            } else {
+                var moduleData = feedbackModule.split(",");
+                var moduleName = moduleData[0];
+                var moduleVersion = '';
+                if (moduleData[1] !== undefined) {
+                    moduleVersion = moduleData[1];
+                }
+                var url = '<?= $block->getFeedbackUrl(); ?>';
+                var version = '<?= $block->getVersion(); ?>';
+                var edition = '<?= $block->getEdition(); ?>';
+
+                feedbackContent = feedbackContent.replace(/(?:\r\n|\r|\n)/g, '<br>');
+
+                var data = {
+                    name: feedbackName,
+                    email: feedbackEmail,
+                    module: moduleName,
+                    version: moduleVersion,
+                    content: feedbackContent,
+                    baseUrl: baseUrl,
+                    magento_version: version,
+                    magento_edition: edition
+                };
+
+                jQuery.ajax({
+                    type: "POST",
+                    url: url,
+                    data: data,
+                    showLoader: true,
+                    crossDomain: true,
+                    success: function () {
+                        alert({
+                            title: 'Message sent!',
+                            content: 'Thank you for your feedback!',
+                            buttons: [{
+                                text: 'OK',
+                                class: 'action-primary action-accept',
+                                click: function () {
+                                    location.reload();
+                                }
+                            }]
+                        });
+                    },
+                    error: function () {
+                        alert({
+                            title: 'Error',
+                            content: 'An error happened when sending the feedback to Magenest. Please try again later.'
+                        });
+                    }
+                });
+            }
+        });
+    });
+</script>

@@ -1,0 +1,39 @@
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="magenest" translate="label" sortOrder="200">
+            <label>Magenest</label>
+        </tab>
+        <section id="contact_magenest" translate="label" type="text" sortOrder="999" showInDefault="1" showInWebsite="0"
+                showInStore="0">
+            <class>separator-top</class>
+            <label>Contact Us</label>
+            <tab>magenest</tab>
+            <resource>Magenest_Core::contact</resource>
+            <group id="form" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="0"
+                    showInStore="0">
+                <label>Send Us Your Feedback</label>
+                <field id="name" translate="label" type="text" sortOrder="10" showInDefault="1" >
+                    <label>Contact Name</label>
+                </field>
+                <field id="email" translate="label" type="text" sortOrder="20" showInDefault="1">
+                    <label>Contact Email</label>
+                    <validate>validate-email</validate>
+                </field>
+                <field id="module" translate="label" type="select" sortOrder="30" showInDefault="1" >
+                    <label>Module</label>
+                    <source_model>Magenest\Core\Model\Config\Source\Modules</source_model>
+                </field>
+                <field id="content" translate="label" type="textarea" sortOrder="40" showInDefault="1" >
+                    <label>Content</label>
+                </field>
+                <field id="send_feedback" translate="button_label" sortOrder="100" showInDefault="1">
+                    <frontend_model>Magenest\Core\Block\Adminhtml\System\Config\Form\Button\SendFeedback</frontend_model>
+                    <depends>
+                        <field id="module" negative="1">0</field>
+                    </depends>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>
