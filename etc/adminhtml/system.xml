@@ -13,6 +13,7 @@
             <group id="form" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="0"
                     showInStore="0">
                 <label>Send Us Your Feedback</label>
+                <comment>For support requests, please follow support portal link in the user guide to receive proper assistance</comment>
                 <field id="name" translate="label" type="text" sortOrder="10" showInDefault="1" >
                     <label>Contact Name</label>
                 </field>
