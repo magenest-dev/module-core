@@ -98,7 +98,7 @@ class Data extends AbstractHelper
 
             return true;
         }
-        if ((time() - intval($lastSt)) > self::SEC_DIFF) {
+        if ((time() - (int) $lastSt) > self::SEC_DIFF) {
             $this->cache->save(time(), self::CACHE_TIME_IDENTIFIER, [self::CACHE_TAG]);
 
             return true;
@@ -140,7 +140,7 @@ class Data extends AbstractHelper
      * Get update url
      * @return string
      */
-    public static function getUpdateUrl()
+    public function getUpdateUrl()
     {
         return self::BASE_URL . self::BASE_CHECKUPDATE_PATH;
     }
@@ -149,7 +149,7 @@ class Data extends AbstractHelper
      * Get module notification update url
      * @return string
      */
-    public static function getUpdateNotificationUrl()
+    public function getUpdateNotificationUrl()
     {
         return self::BASE_URL . self::BASE_CHECKNOTIFICATION_PATH;
     }
@@ -158,7 +158,7 @@ class Data extends AbstractHelper
      * Get module feedback Url
      * @return string
      */
-    public static function getModuleFeedbackUrl()
+    public function getModuleFeedbackUrl()
     {
         return self::BASE_URL . self::BASE_FEEDBACK_PATH;
     }
@@ -187,16 +187,18 @@ class Data extends AbstractHelper
 
         $modules = $this->moduleList->getAll();
         foreach ($modules as $module) {
-            $moduleName = @$module['name'];
-            if (strstr($moduleName, 'Magenest_') === false
-                || $moduleName === 'Magenest_Core'
-            ) {
-                continue;
-            }
+            if (!empty($module) && is_array($module)) {
+                $moduleName = $module['name'] ?? null;
+                if (!isset($moduleName) || strstr($moduleName, 'Magenest_') === false
+                    || $moduleName === 'Magenest_Core'
+                ) {
+                    continue;
+                }
 
-            $modulePart   = explode("_", $moduleName);
-            $mName        = @$modulePart[1];
-            $modulesOut[] = $mName;
+                $modulePart   = explode("_", $moduleName);
+                $mName        = $modulePart[1];
+                $modulesOut[] = $mName;
+            }
         }
 
         if (!empty($modulesOut)) {
@@ -239,20 +241,25 @@ class Data extends AbstractHelper
 
         $curl = $this->curlFactory->create();
         $curl->setConfig(['timeout' => 2]);
-        $curl->write(\Zend_Http_Client::GET, Data::getUpdateNotificationUrl() . $param);
+        $curl->write(\Zend_Http_Client::GET, $this->getUpdateNotificationUrl() . $param);
         $data = $curl->read();
 
         if ($data !== false) {
             $data = preg_split('/^\r?$/m', $data, 2);
-            $data = trim(@$data[1]);
+            $data = isset($data[1]) ? trim($data[1]) : null;
 
+            if ($data) {
+                $data = json_decode($data, true) ?? [];
 
-            $data = json_decode($data, true);
-
-            $count = count($data);
-            if ($count) {
-                foreach ($data as $value) {
-                    $this->addNotification(@$value['id'], @$value['severity'], @$value['created_at'], @$value['title'], @$value['description'], @$value['url']);
+                $count = count($data);
+                if ($count) {
+                    foreach ($data as $value) {
+                        try {
+                            $this->addNotification($value['id'], $value['severity'], $value['created_at'], $value['title'], $value['description'] ?? '', $value['url'] ?? '');
+                        } catch (\Exception $e) {
+                            $this->_logger->debug('Error saving Magenest Notification: ' . $e->getMessage());
+                        }
+                    }
                 }
             }
         }
@@ -275,7 +282,7 @@ class Data extends AbstractHelper
             MessageInterface::SEVERITY_NOTICE   => __('notice'),
         ];
 
-        return @$severities[$severity];
+        return array_key_exists($severity, $severities) ? $severities[$severity] : $severities[MessageInterface::SEVERITY_MINOR];
     }
 
     /**

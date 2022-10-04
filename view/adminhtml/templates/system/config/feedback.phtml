@@ -22,7 +22,7 @@
             var feedbackEmail = jQuery('[data-ui-id="text-groups-form-fields-email-value"]').val();
             var feedbackModule = jQuery('[data-ui-id="select-groups-form-fields-module-value"]').val();
             var feedbackContent = jQuery('[data-ui-id="textarea-groups-form-fields-content-value"]').val();
-            var baseUrl = '<?= $block->getBaseUrl(); ?>';
+            var baseUrl = '<?= /* @noEscape */ $block->getBaseUrl(); ?>';
 
             if (!feedbackName || !feedbackEmail || !feedbackModule || !feedbackContent) {
                 alert({
@@ -39,9 +39,9 @@
                 if (moduleData[1] !== undefined) {
                     moduleVersion = moduleData[1];
                 }
-                var url = '<?= $block->getFeedbackUrl(); ?>';
-                var version = '<?= $block->getVersion(); ?>';
-                var edition = '<?= $block->getEdition(); ?>';
+                var url = '<?= /* @noEscape */ $block->getFeedbackUrl(); ?>';
+                var version = '<?= /* @noEscape */ $block->getVersion(); ?>';
+                var edition = '<?= /* @noEscape */ $block->getEdition(); ?>';
 
                 feedbackContent = feedbackContent.replace(/(?:\r\n|\r|\n)/g, '<br>');
 

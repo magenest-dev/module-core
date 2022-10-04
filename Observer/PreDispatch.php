@@ -54,7 +54,7 @@ class PreDispatch implements ObserverInterface
                     $curlClient = $this->helper->getCurlClient();
                     $modules = $this->helper->getModules();
                     $curlClient->setOption(CURLOPT_REFERER, $this->_storeManager->getStore()->getBaseUrl());
-                    $curlClient->post(Data::getUpdateUrl(),$modules);
+                    $curlClient->post($this->helper->getUpdateUrl(),$modules);
                 } catch (\Exception $e){
                 }
 

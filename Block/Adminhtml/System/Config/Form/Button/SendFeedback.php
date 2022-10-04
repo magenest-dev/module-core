@@ -27,21 +27,26 @@ class SendFeedback extends ConfigFormField
 
     protected $_edition;
 
+    protected $helper;
+
     /**
      * SendFeedback constructor.
      *
      * @param ProductMetadataInterface $productMetadata
      * @param Context $context
+     * @param Data $helper
      * @param array $data
      */
     public function __construct(
         ProductMetadataInterface $productMetadata,
         Context $context,
+        Data $helper,
         array $data = []
     ) {
         $this->_version = $productMetadata->getVersion();
         $this->_edition = $productMetadata->getEdition();
         parent::__construct($context, $data);
+        $this->helper = $helper;
     }
 
     /**
@@ -65,7 +70,7 @@ class SendFeedback extends ConfigFormField
      */
     public function getFeedbackUrl()
     {
-        return Data::getModuleFeedbackUrl();
+        return $this->helper->getModuleFeedbackUrl();
     }
 
     /**

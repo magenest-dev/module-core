@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="adminnotification_inbox" resource="default" comment="Admin Notification Inbox">
+        <column xsi:type="smallint" name="is_magenest" nullable="true" default="0" comment="Is Magenest"/>
+        <column xsi:type="int" name="magenest_id" nullable="true" comment="Magenest notification ID"/>
+    </table>
+</schema>

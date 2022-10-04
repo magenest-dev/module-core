@@ -88,7 +88,7 @@ class Message implements \Magento\Framework\Notification\MessageInterface
      */
     private function getCollection()
     {
-        if (is_null($this->notifications)) {
+        if ($this->notifications === null) {
             /** @var Collection $inbox */
             $inbox = $this->inboxFactory->create();
             $inbox->addFieldToFilter('is_magenest', 1)
