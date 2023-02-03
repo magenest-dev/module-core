@@ -7,6 +7,7 @@
 
 namespace Magenest\Core\Helper;
 
+use Laminas\Http\Request;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\HTTP\Adapter\CurlFactory;
@@ -241,7 +242,7 @@ class Data extends AbstractHelper
 
         $curl = $this->curlFactory->create();
         $curl->setConfig(['timeout' => 2]);
-        $curl->write(\Zend_Http_Client::GET, $this->getUpdateNotificationUrl() . $param);
+        $curl->write(Request::METHOD_GET, $this->getUpdateNotificationUrl() . $param);
         $data = $curl->read();
 
         if ($data !== false) {
