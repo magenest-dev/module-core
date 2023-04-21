@@ -27,6 +27,11 @@ class PreDispatch implements ObserverInterface
     protected $_storeManager;
 
     /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    protected $_logger;
+
+    /**
      * PreDispatch constructor.
      * @param \Magento\Backend\Model\Auth\Session $backendAuthSession
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
@@ -35,11 +40,13 @@ class PreDispatch implements ObserverInterface
     public function __construct(
         \Magento\Backend\Model\Auth\Session $backendAuthSession,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
-        Data $helper
+        Data $helper,
+        \Psr\Log\LoggerInterface $_logger
     ) {
         $this->backendSession = $backendAuthSession;
         $this->helper = $helper;
         $this->_storeManager = $storeManager;
+        $this->_logger = $_logger;
     }
 
     /**
@@ -56,11 +63,13 @@ class PreDispatch implements ObserverInterface
                     $curlClient->setOption(CURLOPT_REFERER, $this->_storeManager->getStore()->getBaseUrl());
                     $curlClient->post($this->helper->getUpdateUrl(),$modules);
                 } catch (\Exception $e){
+                    $this->_logger->debug($e->getMessage());
                 }
 
                 try {
                     $this->helper->checkNotificationUpdate();
                 } catch (\Exception $e) {
+                    $this->_logger->debug($e->getMessage());
                 }
             }
         }

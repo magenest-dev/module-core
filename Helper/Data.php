@@ -241,7 +241,7 @@ class Data extends AbstractHelper
 
         $curl = $this->curlFactory->create();
         $curl->setConfig(['timeout' => 2]);
-        $curl->write(\Zend_Http_Client::GET, $this->getUpdateNotificationUrl() . $param);
+        $curl->write(\Laminas\Http\Request::METHOD_GET, $this->getUpdateNotificationUrl() . $param);
         $data = $curl->read();
 
         if ($data !== false) {
